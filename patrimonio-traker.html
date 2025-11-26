@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patrimonio Tracker</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-black: rgba(0, 0, 0, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-gray-400: rgba(119, 124, 124, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-400: rgba(45, 166, 178, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-red-500: rgba(192, 21, 47, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+            --color-green-500: rgba(34, 197, 94, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-primary-hover: var(--color-teal-400);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-background);
+            color: var(--color-text);
+            padding: var(--space-16);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: var(--space-16);
+            color: var(--color-text);
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: var(--space-24) 0 var(--space-12) 0;
+            color: var(--color-text);
+        }
+
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-20);
+            margin-bottom: var(--space-16);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-24);
+        }
+
+        .metric {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-8);
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .metric-value.positive {
+            color: var(--color-green-500);
+        }
+
+        .metric-value.negative {
+            color: var(--color-red-500);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-16);
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: var(--space-8);
+            color: var(--color-text);
+        }
+
+        input {
+            width: 100%;
+            padding: var(--space-12);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            background: var(--color-surface);
+            color: var(--color-text);
+        }
+
+        input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .btn {
+            background: var(--color-primary);
+            color: white;
+            padding: var(--space-12) var(--space-24);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            margin-top: var(--space-8);
+        }
+
+        .btn:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(var(--color-brown-600-rgb), 0.05);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-8);
+            margin-top: var(--space-16);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            overflow-x: auto;
+            display: block;
+        }
+
+        thead {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        tbody {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        th {
+            background: var(--color-surface);
+            padding: var(--space-12);
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--color-border);
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: var(--space-12);
+            border-bottom: 1px solid var(--color-card-border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr.current-month {
+            background: rgba(var(--color-teal-500-rgb), 0.08);
+        }
+
+        .positive {
+            color: var(--color-green-500);
+        }
+
+        .negative {
+            color: var(--color-red-500);
+        }
+
+        .chart-container {
+            margin: var(--space-24) 0;
+            height: 300px;
+            position: relative;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: var(--space-8);
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: 1px solid var(--color-red-500);
+            color: var(--color-red-500);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: var(--color-red-500);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-12);
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: var(--space-8);
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Patrimonio Tracker</h1>
+        <p class="help-text">Objetivo: Alcanzar 500.000 € de libertad financiera</p>
+
+        <div class="card">
+            <h2>Resumen Actual</h2>
+            <div class="summary-grid" id="summaryGrid">
+                <div class="metric">
+                    <div class="metric-label">Patrimonio Total</div>
+                    <div class="metric-value" id="currentNet">0 €</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Cambio Mensual</div>
+                    <div class="metric-value" id="monthlyChange">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">CAGR Actual</div>
+                    <div class="metric-value" id="cagr">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">vs S&amp;P 500 (8%)</div>
+                    <div class="metric-value" id="vsSP500">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Aporte mensual promedio</div>
+                    <div class="metric-value" id="avgContribution">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Años hasta 500k (aportes lineales)</div>
+                    <div class="metric-value" id="yearsToGoalLinear">N/A</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Años hasta 500k (aportes + 8%)</div>
+                    <div class="metric-value" id="yearsToGoalWithReturns">N/A</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Registrar Mes Actual</h2>
+            <form id="entryForm">
+                <div class="form-group">
+                    <label for="monthYear">Mes/Año</label>
+                    <input type="month" id="monthYear" required>
+                </div>
+                <div class="form-group">
+                    <label for="investments">Inversiones (€)</label>
+                    <input type="number" id="investments" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="cash">Efectivo / Liquidez (€)</label>
+                    <input type="number" id="cash" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="debt">Deuda (€)</label>
+                    <input type="number" id="debt" step="0.01" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Patrimonio Total Calculado</label>
+                    <div class="metric-value" id="calculatedNet">0 €</div>
+                </div>
+                <button type="submit" class="btn">Guardar Mes</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Sincronizar Datos</h2>
+            <p class="help-text">Exporta tus datos para hacer backup o importa datos desde otro dispositivo</p>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="exportCSV()">📥 Exportar CSV</button>
+                <button class="btn btn-secondary" onclick="importCSV()">📤 Importar CSV</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Evolución vs S&amp;P 500</h2>
+            <div class="chart-container">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Histórico Completo</h2>
+            <div style="overflow-x: auto; margin-top: 16px;">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>Inversiones</th>
+                            <th>Efectivo</th>
+                            <th>Deuda</th>
+                            <th>Patrimonio</th>
+                            <th>Cambio €</th>
+                            <th>Cambio %</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+
+    <script>
+        let data = [];
+        const GOAL = 500000;
+        const SP500_ANNUAL_RATE = 0.08;
+        const SP500_MONTHLY_RATE = SP500_ANNUAL_RATE / 12;
+
+        function loadData() {
+            const saved = localStorage.getItem('patrimonioData');
+            if (saved) {
+                data = JSON.parse(saved);
+                data.sort((a, b) => a.date.localeCompare(b.date));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('patrimonioData', JSON.stringify(data));
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            return value.toFixed(2) + '%';
+        }
+
+        function calculateNetWorth(investments, cash, debt) {
+            return investments + cash - debt;
+        }
+
+        function updateCalculatedNet() {
+            const investments = parseFloat(document.getElementById('investments').value) || 0;
+            const cash = parseFloat(document.getElementById('cash').value) || 0;
+            const debt = parseFloat(document.getElementById('debt').value) || 0;
+            const net = calculateNetWorth(investments, cash, debt);
+            document.getElementById('calculatedNet').textContent = formatCurrency(net);
+        }
+
+        document.getElementById('investments').addEventListener('input', updateCalculatedNet);
+        document.getElementById('cash').addEventListener('input', updateCalculatedNet);
+        document.getElementById('debt').addEventListener('input', updateCalculatedNet);
+
+        document.getElementById('entryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const monthYear = document.getElementById('monthYear').value;
+            const investments = parseFloat(document.getElementById('investments').value);
+            const cash = parseFloat(document.getElementById('cash').value);
+            const debt = parseFloat(document.getElementById('debt').value);
+            const netWorth = calculateNetWorth(investments, cash, debt);
+
+            const existingIndex = data.findIndex(entry => entry.date === monthYear);
+            
+            if (existingIndex >= 0) {
+                data[existingIndex] = { date: monthYear, investments, cash, debt, netWorth };
+            } else {
+                data.push({ date: monthYear, investments, cash, debt, netWorth });
+            }
+
+            data.sort((a, b) => a.date.localeCompare(b.date));
+            saveData();
+            updateDisplay();
+            document.getElementById('entryForm').reset();
+            document.getElementById('calculatedNet').textContent = '0 €';
+            alert('Mes guardado correctamente');
+        });
+
+        function calculateCAGR() {
+            if (data.length < 2) return 0;
+            const first = data[0];
+            const last = data[data.length - 1];
+            const years = (new Date(last.date) - new Date(first.date)) / (1000 * 60 * 60 * 24 * 365.25);
+            if (years <= 0 || first.netWorth <= 0) return 0;
+            return (Math.pow(last.netWorth / first.netWorth, 1 / years) - 1) * 100;
+        }
+
+        function yearsToGoal(currentNet, rate) {
+            if (currentNet <= 0 || rate <= 0) return Infinity;
+            return Math.log(GOAL / currentNet) / Math.log(1 + rate);
+        }
+
+        function updateSummary() {
+            if (data.length === 0) {
+                document.getElementById('currentNet').textContent = '0 €';
+                document.getElementById('monthlyChange').textContent = 'N/A';
+                document.getElementById('cagr').textContent = 'N/A';
+                document.getElementById('vsSP500').textContent = 'N/A';
+                document.getElementById('avgContribution').textContent = 'N/A';
+                document.getElementById('yearsToGoalLinear').textContent = 'N/A';
+                document.getElementById('yearsToGoalWithReturns').textContent = 'N/A';
+                return;
+            }
+
+            const current = data[data.length - 1];
+            document.getElementById('currentNet').textContent = formatCurrency(current.netWorth);
+
+            if (data.length > 1) {
+                const previous = data[data.length - 2];
+                const changeAbs = current.netWorth - previous.netWorth;
+                const changePct = previous.netWorth !== 0 ? ((current.netWorth / previous.netWorth - 1) * 100) : 0;
+                const changeText = `${formatCurrency(changeAbs)} (${formatPercent(changePct)})`;
+                const changeEl = document.getElementById('monthlyChange');
+                changeEl.textContent = changeText;
+                changeEl.className = 'metric-value ' + (changeAbs >= 0 ? 'positive' : 'negative');
+            }
+
+            const cagr = calculateCAGR();
+            if (cagr !== 0) {
+                document.getElementById('cagr').textContent = formatPercent(cagr);
+            }
+
+            const monthsElapsed = data.length - 1;
+            const initialNet = data[0].netWorth;
+            const theoreticalSP500 = initialNet * Math.pow(1 + SP500_MONTHLY_RATE, monthsElapsed);
+            const diff = current.netWorth - theoreticalSP500;
+            const diffPct = theoreticalSP500 !== 0 ? ((current.netWorth / theoreticalSP500 - 1) * 100) : 0;
+            const vsSP500Text = `${formatCurrency(diff)} (${formatPercent(diffPct)})`;
+            const vsSP500El = document.getElementById('vsSP500');
+            vsSP500El.textContent = vsSP500Text;
+            vsSP500El.className = 'metric-value ' + (diff >= 0 ? 'positive' : 'negative');
+
+            let avgMonthlyContribution = 0;
+            if (data.length > 1) {
+                const totalIncrease = current.netWorth - data[0].netWorth;
+                const monthsElapsed = data.length - 1;
+                avgMonthlyContribution = totalIncrease / monthsElapsed;
+                document.getElementById('avgContribution').textContent = formatCurrency(avgMonthlyContribution);
+            } else {
+                document.getElementById('avgContribution').textContent = 'N/A';
+            }
+
+            if (avgMonthlyContribution > 0 && current.netWorth < GOAL) {
+                const remainingAmount = GOAL - current.netWorth;
+                const monthsNeeded = remainingAmount / avgMonthlyContribution;
+                const yearsLinear = monthsNeeded / 12;
+                document.getElementById('yearsToGoalLinear').textContent = yearsLinear < 100 ? yearsLinear.toFixed(1) + ' años' : '> 100 años';
+            } else if (current.netWorth >= GOAL) {
+                document.getElementById('yearsToGoalLinear').textContent = '¡Objetivo alcanzado!';
+            } else {
+                document.getElementById('yearsToGoalLinear').textContent = 'N/A';
+            }
+
+            if (avgMonthlyContribution > 0 && current.netWorth < GOAL) {
+                const monthlyRate = SP500_ANNUAL_RATE / 12;
+                const FV = GOAL;
+                const PV = current.netWorth;
+                const PMT = avgMonthlyContribution;
+                
+                let months = 0;
+                let futureValue = PV;
+                while (futureValue < FV && months < 1200) {
+                    futureValue = futureValue * (1 + monthlyRate) + PMT;
+                    months++;
+                }
+                
+                const yearsWithReturns = months / 12;
+                document.getElementById('yearsToGoalWithReturns').textContent = yearsWithReturns < 100 ? yearsWithReturns.toFixed(1) + ' años' : '> 100 años';
+            } else if (current.netWorth >= GOAL) {
+                document.getElementById('yearsToGoalWithReturns').textContent = '¡Objetivo alcanzado!';
+            } else {
+                document.getElementById('yearsToGoalWithReturns').textContent = 'N/A';
+            }
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px;">No hay datos registrados</td></tr>';
+                return;
+            }
+
+            const initialNet = data[0].netWorth;
+
+            data.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                if (index === data.length - 1) {
+                    row.className = 'current-month';
+                }
+
+                let changeAbs = 'N/A';
+                let changePct = 'N/A';
+                let changeClass = '';
+
+                if (index > 0) {
+                    const prev = data[index - 1];
+                    const abs = entry.netWorth - prev.netWorth;
+                    const pct = prev.netWorth !== 0 ? ((entry.netWorth / prev.netWorth - 1) * 100) : 0;
+                    changeAbs = formatCurrency(abs);
+                    changePct = formatPercent(pct);
+                    changeClass = abs >= 0 ? 'positive' : 'negative';
+                }
+
+                row.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>${formatCurrency(entry.investments)}</td>
+                    <td>${formatCurrency(entry.cash)}</td>
+                    <td>${formatCurrency(entry.debt)}</td>
+                    <td><strong>${formatCurrency(entry.netWorth)}</strong></td>
+                    <td class="${changeClass}">${changeAbs}</td>
+                    <td class="${changeClass}">${changePct}</td>
+                    <td><button class="btn-delete" onclick="deleteMonth('${entry.date}')">🗑️</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateChart() {
+            const canvas = document.getElementById('chart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (data.length === 0) {
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text-secondary');
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No hay datos para mostrar', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const initialNet = data[0].netWorth;
+            const realValues = data.map(d => d.netWorth);
+            const sp500Values = data.map((d, i) => initialNet * Math.pow(1 + SP500_MONTHLY_RATE, i));
+
+            const allValues = [...realValues, ...sp500Values, GOAL];
+            const maxValue = Math.max(...allValues);
+            const minValue = Math.min(...allValues);
+            const padding = 40;
+            const chartWidth = canvas.width - padding * 2;
+            const chartHeight = canvas.height - padding * 2;
+
+            function scaleY(value) {
+                return canvas.height - padding - ((value - minValue) / (maxValue - minValue)) * chartHeight;
+            }
+
+            function scaleX(index) {
+                return padding + (index / (data.length - 1)) * chartWidth;
+            }
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-border');
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            realValues.forEach((value, index) => {
+                const x = scaleX(index);
+                const y = scaleY(value);
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text-secondary');
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            sp500Values.forEach((value, index) => {
+                const x = scaleX(index);
+                const y = scaleY(value);
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            if (GOAL >= minValue && GOAL <= maxValue) {
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-green-500');
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                const goalY = scaleY(GOAL);
+                ctx.beginPath();
+                ctx.moveTo(padding, goalY);
+                ctx.lineTo(canvas.width - padding, goalY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-green-500');
+                ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.fillText('Meta: 500k €', padding + 5, goalY - 5);
+            }
+
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text');
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('━ Tu patrimonio', padding, 20);
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text-secondary');
+            ctx.fillText('- - S&P 500 (8%)', padding + 120, 20);
+        }
+
+        function updateDisplay() {
+            updateSummary();
+            updateTable();
+            updateChart();
+        }
+
+        function exportCSV() {
+            if (data.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+
+            let csv = 'Mes,Inversiones,Efectivo,Deuda,Patrimonio Total\n';
+            data.forEach(entry => {
+                csv += `${entry.date},${entry.investments},${entry.cash},${entry.debt},${entry.netWorth}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `patrimonio_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            alert('Datos exportados correctamente');
+        }
+
+        function importCSV() {
+            document.getElementById('csvFileInput').click();
+        }
+
+        document.getElementById('csvFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const csv = event.target.result;
+                    const lines = csv.split('\n');
+                    const importedData = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        const [date, investments, cash, debt, netWorth] = line.split(',');
+                        importedData.push({
+                            date: date.trim(),
+                            investments: parseFloat(investments),
+                            cash: parseFloat(cash),
+                            debt: parseFloat(debt),
+                            netWorth: parseFloat(netWorth)
+                        });
+                    }
+
+                    if (importedData.length > 0) {
+                        data = importedData;
+                        data.sort((a, b) => a.date.localeCompare(b.date));
+                        saveData();
+                        updateDisplay();
+                        alert(`${importedData.length} registros importados correctamente`);
+                    }
+                } catch (error) {
+                    alert('Error al importar el archivo CSV. Verifica el formato.');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        function deleteMonth(monthDate) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar el registro de ${monthDate}?`)) {
+                return;
+            }
+
+            const index = data.findIndex(entry => entry.date === monthDate);
+            if (index >= 0) {
+                data.splice(index, 1);
+                saveData();
+                updateDisplay();
+                alert('Mes eliminado correctamente');
+            }
+        }
+
+        const today = new Date();
+        const currentMonth = today.toISOString().slice(0, 7);
+        document.getElementById('monthYear').value = currentMonth;
+
+        loadData();
+        updateDisplay();
+
+        window.addEventListener('resize', updateChart);
+    </script>
+</body>
+</html>
